@@ -5,13 +5,15 @@ This can also be used for google maps premier by passing client and secret param
 
 ## Usage
 
-[![Clojars Project](http://clojars.org/org.clojars.raywillig/google-maps-web-api/latest-version.svg)]
+[![latest version][2]][1]
 
-FIXME
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Ray Willig
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
+
+[1]: https://clojars.org/org.clojars.raywillig/google-maps-web-api
+[2]: http://clojars.org/org.clojars.raywillig/google-maps-web-api/latest-version.svg
