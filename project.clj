@@ -1,6 +1,6 @@
-(defproject org.clojars.raywillig/google-maps-web-api "0.1.1"
+(defproject org.clojars.raywillig/google-maps-web-api "0.1.4"
   :description "Clojure wrapper for google maps web api including signing for premier "
-  :url "http://example.com/FIXME"
+  :url "https://github.com/rwillig/google-maps-web-api"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :scm     {:name "git "
