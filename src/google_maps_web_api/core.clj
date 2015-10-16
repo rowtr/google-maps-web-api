@@ -1,13 +1,14 @@
-(ns google-maps-web-api.core  
+(ns google-maps-web-api.core
   (:require (org.bovinegenius [exploding-fish :as uri]))
   (:require [clojure.string :as s])
   (:require [clojure.data.json :as json])
   (:import javax.crypto.spec.SecretKeySpec)
   (:import javax.crypto.Mac)
-  (:import org.apache.commons.codec.binary.Base64)) 
+  (:import org.apache.commons.codec.binary.Base64))
 
 (def base-url               "https://maps.googleapis.com/maps/api/")
 (def geocode-url            (str base-url "geocode/"))
+(def timezone-url           (str base-url "timezone/"))
 (def directions-url         (str base-url "directions/"))
 
 (def geo.status.map {
@@ -30,7 +31,7 @@
 		"UNKNOWN_ERROR" "A directions request could not be processed due to a server error. The request may succeed if you try again.";
 		"ZERO_RESULTS" "No route could be found between the origin and destination.";
 		})
- 
+
 (defn- prepare-secret [secret]
   (Base64/decodeBase64 (.getBytes (s/replace (s/replace secret "-" "+") "_" "/"))))
 
@@ -52,25 +53,41 @@
 
 (defn google-directions
   "get directions object from google maps api expects origin and destination to maps containing lat lng"
-  [{:keys [from to client secret ]}]
-  (let [out         "json" 
+  [{:keys [from to client secret] :as args}]
+  (let [out         "json"
+        args        (dissoc args :client :secret :from :to)
         sign        (if (and client secret) true false)
         url         (str directions-url out)
         orig        (str (:lat from) "," (:lng from))
         dest        (str (:lat to) "," (:lng to))
-        dir-url     (reduce-kv uri/param url {"origin" orig "destination" dest "sensor" "false" })
+        args        (assoc args :origin orig :destination dest :sensor "false")
+        dir-url     (reduce-kv uri/param url (zipmap (map name (keys args)) (vals args)))
         final-url   (if sign (signed-url dir-url client secret) dir-url)
         response    (json/read-json (slurp final-url))]
     response))
 
 (defn google-geocode
   "get geocode object from google maps api"
-  [{:keys [address client secret ]} ]
+  [{:keys [address client secret ] :as args} ]
   (let [out         "json"
+        args        (dissoc args :client :secret)
         sign        (if (and client secret) true false)
         url         (str geocode-url out)
-        geo-url     (reduce-kv uri/param url {"address" address "sensor" "false"})
-        final-url   (if sign (signed-url geo-url client secret) geo-url) 
+        geo-url     (reduce-kv uri/param url (merge (zipmap (map name (keys args)) (vals args)) {"sensor" "false"}))
+        final-url   (if sign (signed-url geo-url client secret) geo-url)
         response    (json/read-json (slurp final-url))]
     response))
 
+(defn google-timezone
+  "get timezone info for lat/lng"
+  [{:keys [location client secret] :as args}]
+  (let [out         "json"
+        args        (dissoc args :client :secret)
+        sign        (if (and client secret) true false)
+        url         (str timezone-url out)
+        loc         (str (:lat location) "," (:lng location))
+        args        (assoc args :location loc :timestamp (str (quot (System/currentTimeMillis) 1000)))
+        tz-url      (reduce-kv uri/param url (zipmap (map name (keys args)) (vals args)))
+        final-url   (if sign (signed-url tz-url client secret) tz-url)
+        response    (json/read-json (slurp final-url))]
+    response))
