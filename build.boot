@@ -8,7 +8,7 @@
   :target-path "target"
   :resource-paths #{"src"})
 (require '[adzerk.bootlaces :refer :all])
-(def +version+ "0.1.6")
+(def +version+ "0.1.8")
 (task-options!
  pom  {:project     'rowtr/google-maps-web-api
        :version     +version+

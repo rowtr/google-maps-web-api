@@ -9,6 +9,7 @@
 (def base-url               "https://maps.googleapis.com/maps/api/")
 (def geocode-url            (str base-url "geocode/"))
 (def timezone-url           (str base-url "timezone/"))
+(def streetview-url         (str base-url "streetview"))
 (def directions-url         (str base-url "directions/"))
 
 (def geo.status.map {
@@ -60,7 +61,7 @@
         url         (str directions-url out)
         orig        (str (:lat from) "," (:lng from))
         dest        (str (:lat to) "," (:lng to))
-        args        (assoc args :origin orig :destination dest :sensor "false")
+        args        (assoc args :origin orig :destination dest)
         dir-url     (reduce-kv uri/param url (zipmap (map name (keys args)) (vals args)))
         final-url   (if sign (signed-url dir-url client secret) dir-url)
         response    (json/read-json (slurp final-url))]
@@ -73,9 +74,22 @@
         args        (dissoc args :client :secret)
         sign        (if (and client secret) true false)
         url         (str geocode-url out)
-        geo-url     (reduce-kv uri/param url (merge (zipmap (map name (keys args)) (vals args)) {"sensor" "false"}))
+        geo-url     (reduce-kv uri/param url (merge (zipmap (map name (keys args)) (vals args))))
         final-url   (if sign (signed-url geo-url client secret) geo-url)
         response    (json/read-json (slurp final-url))]
+    response))
+
+(defn google-streetview
+  "get streetview image for lat/lng"
+  [{:keys [location client secret] :as args}]
+  (let [args        (dissoc args :client :secret)
+        sign        (if (and client secret) true false)
+        loc         (str (:lat location) "," (:lng location))
+        url         (str streetview-url)
+        args        (assoc args :location loc)
+        sv-url      (reduce-kv uri/param url (zipmap (map name (keys args)) (vals args)))
+        final-url   (if sign (signed-url sv-url client secret) sv-url)
+        response    (clojure.java.io/input-stream final-url)]
     response))
 
 (defn google-timezone
